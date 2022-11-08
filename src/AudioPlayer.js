@@ -20,7 +20,7 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 
 import RNFetchBlob from 'rn-fetch-blob';
 import download from './DownloadTest';
-import { getData, setData, del } from '../lib/AsyncStorageCRUD';
+import { getData, setData } from '../lib/AsyncStorageCRUD';
 
 import TrackPlayer, {
     RepeatMode,
@@ -52,7 +52,7 @@ const trackDIR = DIR + '/tracks/';
 const thumbDIR = DIR + '/thumbnails/';
 const PATH = fs.dirs.DocumentDir + '/.jb/db';
 
-const templateString = (dir, file, ext) => { return `file://${dir}/${file}.${ext}`};
+const templateString = (dir, file, ext) => { return `file://${dir}${file}.${ext}` };
 
 const AudioPlayer = ({navigation, route}) => {
     const {data, index} = route.params.props;
@@ -67,8 +67,6 @@ const AudioPlayer = ({navigation, route}) => {
     
     // fs states
     const [fileData, setFileData] = React.useState([]);
-
-    // fs methods :: _create() _read()
 
     const _create = (path) => {
         _read(path);
@@ -165,10 +163,9 @@ const AudioPlayer = ({navigation, route}) => {
                 <TouchableOpacity onPress={()=>{
                     let arr = [...downloadQueue, id];
                     console.log(arr);
+                    //_create(PATH);
                     setData('DWNLD', arr); // async storage
                     setDownloadQueue(arr); 
-                    // RefreshFS();
-                    _create(PATH);
                     download(`${data[currentIndex].url}`, trackDIR, `${data[currentIndex].id}.mp3`);
                     download(`${data[currentIndex].artwork}`, thumbDIR, `${data[currentIndex].id}.jpg`);
                 }}>

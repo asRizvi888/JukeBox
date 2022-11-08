@@ -9,7 +9,15 @@ import AnimatedComponent from './src/AnimatedComponent';
 import DownloadTest from './src/DownloadTest';
 import TestCRUD from './screens/TestCRUD';
 import FsCRUD from './src/FsCRUD';
+
 import TrackPlayer, {Event, useTrackPlayerEvents, Capability} from 'react-native-track-player';
+import RNFetchBlob from 'rn-fetch-blob';
+const { fs } = RNFetchBlob;
+const DIR = fs.dirs.MusicDir + '/.jukebox';
+
+const trackDIR = DIR + '/tracks/';
+const thumbDIR = DIR + '/thumbnails/';
+const PATH = fs.dirs.DocumentDir + '/.jb/db';
 
 import { 
   LoadingProvider, 
@@ -36,6 +44,25 @@ const requestStoragePermission = async () => {
       );
       if (granted === PermissionsAndroid.RESULTS.GRANTED) {
         console.log("You can use the EXTERNAL_STORAGE");
+        
+        fs.isDir(thumbDIR).then(res => {
+          if (!res) {
+            fs.mkdir(thumbDIR)
+          }
+        })
+        
+        fs.isDir(trackDIR).then(res => {
+          if (!res) {
+            fs.mkdir(trackDIR)
+          }
+        })
+        
+        fs.exists(PATH).then(res => {
+          if (!res) {
+            fs.writeFile(PATH)
+          }
+        })
+
       } else {
         console.log("EXTERNAL_STORAGE permission denied");
       }

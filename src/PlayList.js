@@ -56,17 +56,18 @@ const PlayList = ({route, navigation}) => {
                         return (
 
                             <View style={{
-                                alignItems: 'center', 
+                                //alignItems: 'center', 
                                 justifyContent: 'center',
-                                padding: 25
+                                padding: 30
                             }}>
                                 <Text 
                                 numberOfLines={2}
                                 ellipsizeMode='middle'
                                 style={{
-                                    fontSize: 36,
-                                    fontWeight: 'bold',
-                                    textAlign: 'center',
+                                    fontSize: 42,
+                                    fontWeight: '900',
+                                    color: 'black',
+                                    //textAlign: 'center',
                                 }}>{props.toUpperCase()}</Text>
                             </View>
                         );

@@ -57,7 +57,7 @@ const AutoSuggestion = ({navigation}) => {
                 setQuery(props.toString());
                 keyBoardRef.current.focus(); 
             }}>
-                <Feather name='arrow-up-right' size={20} color="grey" />
+                <Feather name='arrow-up-left' size={20} color="grey" />
             </TouchableOpacity>
             </View>
          );
