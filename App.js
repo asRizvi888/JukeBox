@@ -7,7 +7,6 @@ import { NavigationContainer } from '@react-navigation/native';
 import MyStack from './src/Screens';
 import AnimatedComponent from './src/AnimatedComponent';
 import DownloadTest from './src/DownloadTest';
-import TestCRUD from './screens/TestCRUD';
 import FsCRUD from './src/FsCRUD';
 
 import TrackPlayer, {Event, useTrackPlayerEvents, Capability} from 'react-native-track-player';

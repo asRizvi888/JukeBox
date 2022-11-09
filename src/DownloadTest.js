@@ -18,6 +18,7 @@ const download = (url, dir, filename) => {
       addAndroidDownloads: {
         useDownloadManager: true,
         notification: false,
+        mediaScannable: true,
         path: dir + filename
       }
     }).fetch('GET', url)

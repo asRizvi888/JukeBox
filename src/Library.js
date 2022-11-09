@@ -3,7 +3,7 @@ import { SafeAreaView, View, StyleSheet , Text, Dimensions, TouchableOpacity, Al
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import Widget from '../components/Widget';
 import RNFetchBlob from 'rn-fetch-blob';
-import { CurrentQueueContext } from '../lib/ContextJB';
+import { CurrentQueueContext, CurrentIndexContext } from '../lib/ContextJB';
 
 import Animated, { runOnJS, useAnimatedGestureHandler, useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 import IonIcons from 'react-native-vector-icons/Ionicons';
@@ -18,23 +18,27 @@ const trackDIR = DIR + '/tracks/';
 const thumbDIR = DIR + '/thumbnails/';
 const PATH = fs.dirs.DocumentDir + '/.jb/db';
 
-const img = '-24zBDFTG28';
-// https://reactnative.dev/img/logo-og.png
-const local = `file:///${fs.dirs.MusicDir}/.jukebox/thumbnails/${img}.jpg`;
-
-const arr = [];
-for (let i = 0; i<10; ++i) {
-    arr.push(i);
-}
+const templateString = (dir, file, ext) => { return `file://${dir}${file}.${ext}` };
 
 const Library = ({navigation}) => {
 
-    const [trackList, setTrackList] = React.useState([]);
-    const {currentQueue} = React.useContext(CurrentQueueContext);
+    const {currentQueue, setCurrentQueue} = React.useContext(CurrentQueueContext);
+    const {currentIndex, setCurrentIndex} = React.useContext(CurrentIndexContext);
+
     const [query, setQuery] = React.useState('');
     // fs states
     const [fileData, setFileData] = React.useState([]);
-    const [offlineList, setOfflineList] = React.useState([]);
+
+    const filteredList = [];
+
+    if (fileData) {
+        fileData.map(e => {
+            if (e['title'].toLowerCase().includes(query.toLowerCase())) {
+                console.log(e)
+                filteredList.push(e);
+            }
+        })
+    }
 
     const _read = (path) => {
         fs.exists(path).then(res => {
@@ -45,7 +49,9 @@ const Library = ({navigation}) => {
         fs.readFile(path).then((response) => {
             // Alert.alert(response);
             if (response) {
-                setFileData(JSON.parse(response));
+                let temp = JSON.parse(response);
+
+                setFileData(temp);
             }
         }).catch((err) => {
             console.error(err);
@@ -57,11 +63,16 @@ const Library = ({navigation}) => {
 
         if (key && fileData) {
             //delete fileData[key];
+
             let temp = fileData.filter(item => {
-                return item.key !== key;
+                return item.id !== key;
             })
 
             setFileData(temp);
+
+            if (!currentQueue[currentIndex].url.includes("https://")) {
+                setCurrentQueue(temp);
+            }
 
             fs.unlink(`${trackDIR}${key}.mp3`);
             fs.unlink(`${thumbDIR}${key}.jpg`);
@@ -73,35 +84,13 @@ const Library = ({navigation}) => {
                 console.error(err);
             })
             //console.log('After: ', fileData)
-        }
+        } 
     }
    
     React.useState(() => {
-       // fs.ls(trackDIR).then(tracks => {
-       //     setTrackList(tracks.map(e => e.split('.')[0]));
-       // })
-
         _read(PATH);
-
-        //console.log('INside:', fileData)
-
-        // const _id = fileData.map(item => item.id);
-
-        // console.log("ID:", _id);
-
-        // trackList.forEach( e => {
-        //     if (_id.includes(e)) {
-        //         setOfflineList((prev) => {
-        //             [...prev, e]
-        //         })
-        //     }
-        // })
     },[])
   
-    if (offlineList.length !== 0) {
-        console.log(offlineList[0].title);
-    }
-
     console.log(fileData)
     // console.log('Outside:', fileData);
 
@@ -227,7 +216,7 @@ const Library = ({navigation}) => {
                     }}>
                     <Animated.View style={[zoomStyle]}>
                         <TouchableOpacity disabled={!swipe} onPress={()=>{
-                            Alert.alert(`Delete Item: ${props.index}`, 'Are you sure to delete this item?',[
+                            Alert.alert(`Delete Item`, 'Are you sure to delete this item?',[
                                 {
                                     text: 'Cancel',
                                     style: 'cancel',
@@ -240,19 +229,23 @@ const Library = ({navigation}) => {
                                 {
                                     text: 'Delete',
                                     onPress: () => {
-                                        console.warn('Item Deleted Successfully')
-                                        
-                                        position.value = runOnJS(withSpring)(-WIDTH);
-                                        scale.value = 0;
-                                        setSwipe(false);
+                                        if (currentQueue[currentIndex].url !== fileData[props.index].url) {
 
-                                        _removeItem(PATH, offlineList[props.index].id);
-                                        
-                                        let newList = offlineList.filter(e => {
-                                            return e !== trackList[props.index];
-                                        })
-                                        
-                                        setOfflineList(newList);
+                                            console.warn('Item Deleted Successfully')
+                                            
+                                            position.value = runOnJS(withSpring)(-WIDTH);
+                                            scale.value = 0;
+                                            setSwipe(false);
+
+                                            _removeItem(PATH, fileData[props.index].id);
+
+                                        } else {
+                                            Alert.alert('Alert!',"Can\'t delete queued track. Stop the track & try again...")
+                                            position.value = runOnJS(withSpring)(0);
+                                            scale.value = 0;
+                                            setSwipe(false);
+                                        }
+
                                     }
                                 }
                             ]);
@@ -287,10 +280,12 @@ const Library = ({navigation}) => {
                 }}>Offline</Text>
             </TouchableOpacity>
             <FlatList 
-                data={fileData} 
+                data={!query ? fileData : filteredList} 
                 renderItem={({item, index})=>(
                     <Pressable onPress={()=>{
-                        Alert.alert(JSON.stringify(index))
+                        //Alert.alert(JSON.stringify(index))
+                        navigation.navigate("AudioPlayer", {props:{data:fileData, index: fileData.indexOf(item)}});
+                        setCurrentIndex(fileData.indexOf(item));
                     }}>
                         <AnimatedComponent props={{
                             title: item.title,

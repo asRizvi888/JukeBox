@@ -1,9 +1,10 @@
 import * as React from 'react';
-import {View, Text, Button, Alert, TextInput, Dimensions, Image} from 'react-native';
+import {View, Text, Button, Alert, TextInput, Dimensions, Image, FlatList} from 'react-native';
 import RNFetchBlob from 'rn-fetch-blob';
 
 const {fs} = RNFetchBlob;
-const DIR = fs.dirs.DocumentDir + '/.jb/db';
+//const DIR = fs.dirs.DocumentDir + '/.jb/db';
+const DIR = fs.dirs.DocumentDir + '/test';
 
 const img = '-24zBDFTG28';
 // https://reactnative.dev/img/logo-og.png
@@ -30,10 +31,10 @@ const FsCRUD = () => {
         let data = {
             key: key,
             value: value,
-            _id: 6969
+            //_id: 6969
         }
 
-        data._id = 420;
+        //data._id = 420;
 
         let buffer = [...fileData, data];
         setFileData(buffer);
@@ -110,6 +111,7 @@ const FsCRUD = () => {
             justifyContent: 'space-evenly',
             backgroundColor: 'white'
         }}>
+            {/*
             <Image 
                 source={{uri:`${local}`}}
                 resizeMode='center'
@@ -118,6 +120,7 @@ const FsCRUD = () => {
                     width: 500
                 }}
             />
+            */}
             <TextInput 
                 placeholder='Enter Key here'
                 value={key}
@@ -187,6 +190,18 @@ const FsCRUD = () => {
                     }}
                 />
             </View>
+            <FlatList 
+                data={fileData}
+                renderItem={({item}) => {
+                    return (
+                        <View>
+                            <Text>
+                                {item.key}  {item.value}
+                            </Text>
+                        </View>
+                    );
+                }}
+            />
         </View>
     );
 }

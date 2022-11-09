@@ -69,17 +69,21 @@ const AudioPlayer = ({navigation, route}) => {
     const [fileData, setFileData] = React.useState([]);
 
     const _create = (path) => {
-        _read(path);
+        //_read(path);
         
-        let _data = currentQueue[currentIndex];
+        let _data = data[currentIndex];
 
-        _data.url = templateString(trackDIR, _data.id, 'mp3');
-        _data.artwork = templateString(thumbDIR, _data.id, 'jpg');
+        _data.url = templateString(trackDIR, _data.id, 'mp3').toString();
+        _data.artwork = templateString(thumbDIR, _data.id, 'jpg').toString();
+
+        // delete(_data['url']);
+        // delete(_data['artwork']);
 
         let buffer = [...fileData, _data];
-        setFileData(buffer);
+
+        console.log(buffer);
+
         fs.writeFile(path, JSON.stringify(buffer), 'utf8').then(() => {
-            //Alert.alert('Successfully created data.');
             _read(path);
         }).catch(err => {
             console.error(err);
@@ -93,7 +97,6 @@ const AudioPlayer = ({navigation, route}) => {
             }
         })
         fs.readFile(path).then((response) => {
-            // Alert.alert(response);
             if (response) {
                 setFileData(JSON.parse(response));
             }
@@ -101,6 +104,10 @@ const AudioPlayer = ({navigation, route}) => {
             console.error(err);
         })    
     }
+
+    React.useEffect(() => {
+        _read(PATH);
+    },[])
 
     const updateOfflineList = async () => {
         fs.ls(trackDIR).then(files => {
@@ -132,6 +139,10 @@ const AudioPlayer = ({navigation, route}) => {
         updateOfflineList();
     },[])
 
+    React.useEffect(() => {
+        updateDownloadQueue();
+    },[offlineList])
+
     fs.ls(trackDIR).then(files => {
         if (files.length !== offlineList.length) {
             updateOfflineList().then(() => {
@@ -162,12 +173,13 @@ const AudioPlayer = ({navigation, route}) => {
             return (
                 <TouchableOpacity onPress={()=>{
                     let arr = [...downloadQueue, id];
-                    console.log(arr);
-                    //_create(PATH);
+                    //console.log(arr);
                     setData('DWNLD', arr); // async storage
                     setDownloadQueue(arr); 
                     download(`${data[currentIndex].url}`, trackDIR, `${data[currentIndex].id}.mp3`);
-                    download(`${data[currentIndex].artwork}`, thumbDIR, `${data[currentIndex].id}.jpg`);
+                    download(`${data[currentIndex].artwork}`, thumbDIR, `${data[currentIndex].id}.jpg`).then(() => {
+                        _create(PATH);
+                    })
                 }}>
                     <AntDesign name='download' size={22} color="white"/>
                 </TouchableOpacity> 
@@ -265,7 +277,10 @@ const AudioPlayer = ({navigation, route}) => {
         } 
 
     },[data])
-  
+ 
+    // 4f8f92a58c0cf2da7377eea8dac03307
+    // https://ws.audioscrobbler.com/2.0/?method=chart.gettopartists&api_key=4f8f92a58c0cf2da7377eea8dac03307&format=json
+    
     return (
         <ImageBackground 
             style={{flex:1, opacity: 1}}
